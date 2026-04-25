@@ -161,7 +161,7 @@ def seed_db():
         create_algorithm(db, "pattern_detection", "GPSData", "ActivityPattern", 1.0, ctx_activity.id)
         create_algorithm(db, "performance_eval", "ActivityPattern", "PerformanceReport", 1.0, ctx_activity.id)
 
-        print("\t*** DB popolato con dominio ospedaliero ***")
+        print("\t*** DB populated with a standard ***")
 
         # =====================================================
         # 4. PIPELINE (CHIAVE PER LA PRESENTAZIONE)
