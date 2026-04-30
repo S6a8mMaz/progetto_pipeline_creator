@@ -74,25 +74,22 @@ if not st.session_state.app_started:
     st.title("Welcome to Pipeline Builder")
 
     st.markdown("""
-    **Pipeline Builder** is an application for guided design of data processing pipelines.
-    It allows you to define data types (Object Types) and transformation algorithms, and combine them to build consistent pipelines step by step.
+    **Pipeline Builder** is an application for guided design of data processing pipelines. It allows you to define data types (*Object Types*) and transformation algorithms, and combine them to build consistent pipelines step by step.
                 
     ---
+                
     ##### ⚙️ How it works
                 
-    At startup, you will be asked to choose an operating context.
-    After that, you will have access to the main menu:
-    Object Types: View/Define/Delete data types
-    Algorithms: View/Define/Delete transformations between data types
-    Saved Pipelines: View and reuse previously created pipelines
-    Pipeline Builder: Build pipelines step by step:
-    choose initial and final type
-    the system suggests only valid transformations
+    At startup, you will be asked to choose an operating context, and after that, you will have access to the main menu:
+    - Object Types: View/Define/Delete data types
+    - Algorithms: View/Define/Delete transformations between data types
+    - Saved Pipelines: View and reuse previously created pipelines
+    - Pipeline Builder: Build pipelines step by step, choosing the initial and the final type. The system will suggest only valid transformations
                 
     ---
     ##### 🌳 Context inheritance
 
-    Elements (Object Types, Algorithms, Pipelines) defined in a parent context are automatically available in child contexts.
+    Elements (*Object Types*, *Algorithms*, *Pipelines*) defined in a parent context are automatically available in child contexts.
     A pipeline created in a higher-level context can therefore be reused in derived contexts.
                 
     -----    
