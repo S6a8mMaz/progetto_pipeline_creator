@@ -93,7 +93,7 @@ IF ERRORLEVEL 1 goto error
 
 echo.
 echo Installing required dependencies...
-python -m pip install fastapi uvicorn streamlit sqlalchemy
+python -m pip install fastapi uvicorn streamlit sqlalchemy requests
 IF ERRORLEVEL 1 goto error
 
 REM =====================================================
