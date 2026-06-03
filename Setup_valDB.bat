@@ -1,16 +1,29 @@
 @echo off
 setlocal
 
+cd /d "%~dp0"
+
 echo =====================================
-echo PIPELINE CREATOR - DATABASE SETUP
+echo PIPELINE CREATOR - SETUP
 echo =====================================
-echo This script prepares the database and
-echo optionally loads initial example data
+echo This script prepares the application.
+echo It creates the virtual environment,
+echo installs dependencies and creates DB.
 echo =====================================
 echo.
 
 REM =====================================================
-REM Python check: requires Python >= 3.10
+REM Check requirements.txt
+REM =====================================================
+
+if not exist requirements.txt (
+    echo ERROR: requirements.txt not found.
+    echo Make sure requirements.txt is in the project root folder.
+    goto error
+)
+
+REM =====================================================
+REM Python check: requires Python 3.10
 REM =====================================================
 
 echo Checking Python installation...
@@ -18,18 +31,18 @@ echo Checking Python installation...
 call :find_python
 
 IF ERRORLEVEL 1 (
-    echo Python 3.10 or newer not found.
-    echo Trying to install Python 3.11 using winget...
+    echo Python 3.10 not found.
+    echo Trying to install Python 3.10 using winget...
     echo.
 
     winget --version >nul 2>&1
     IF ERRORLEVEL 1 (
         echo winget not found.
-        echo Please install Python 3.10 or newer manually.
+        echo Please install Python 3.10 manually.
         goto error
     )
 
-    winget install -e --id Python.Python.3.11 --scope user --accept-package-agreements --accept-source-agreements
+    winget install -e --id Python.Python.3.10 --scope user --accept-package-agreements --accept-source-agreements
     IF ERRORLEVEL 1 goto error
 
     echo.
@@ -56,10 +69,10 @@ echo.
 echo Checking virtual environment...
 
 if exist venv\Scripts\python.exe (
-    venv\Scripts\python.exe -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
+    venv\Scripts\python.exe -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3,10) else 1)" >nul 2>&1
 
     IF ERRORLEVEL 1 (
-        echo Existing virtual environment uses an unsupported Python version.
+        echo Existing virtual environment does not use Python 3.10.
         echo Deleting old virtual environment...
         rmdir /s /q venv
     ) else (
@@ -73,17 +86,18 @@ echo Creating virtual environment...
 if not exist venv (
     %PYTHON_CMD% -m venv venv
     IF ERRORLEVEL 1 goto error
-    echo Virtual environment created
+    echo Virtual environment created.
 ) else (
-    echo Virtual environment already exists
+    echo Virtual environment already exists.
 )
 
+echo.
 echo Activating virtual environment...
 call venv\Scripts\activate
 IF ERRORLEVEL 1 goto error
 
 REM =====================================================
-REM Install dependencies
+REM Install dependencies from requirements.txt
 REM =====================================================
 
 echo.
@@ -92,27 +106,32 @@ python -m pip install --upgrade pip
 IF ERRORLEVEL 1 goto error
 
 echo.
-echo Installing required dependencies...
-python -m pip install fastapi uvicorn streamlit sqlalchemy requests
+echo Installing exact Python dependencies from requirements.txt...
+python -m pip install -r requirements.txt
+IF ERRORLEVEL 1 goto error
+
+echo.
+echo Installed main package versions:
+python -c "import sys, sqlite3, fastapi, uvicorn, streamlit, sqlalchemy, requests, pydantic; print('Python:', sys.version.split()[0]); print('FastAPI:', fastapi.__version__); print('Uvicorn:', uvicorn.__version__); print('Streamlit:', streamlit.__version__); print('SQLAlchemy:', sqlalchemy.__version__); print('Requests:', requests.__version__); print('Pydantic:', pydantic.__version__); print('SQLite:', sqlite3.sqlite_version)"
 IF ERRORLEVEL 1 goto error
 
 REM =====================================================
-REM Reset DB
+REM Reset database
 REM =====================================================
 
 echo.
 echo Preparing database...
 
 if exist PIPELINE_CREATOR_DB.db (
-    echo Existing database found
+    echo Existing database found.
     echo Deleting database...
     del PIPELINE_CREATOR_DB.db
 ) else (
-    echo No existing database found
+    echo No existing database found.
 )
 
 REM =====================================================
-REM Create DB
+REM Create database structure
 REM =====================================================
 
 echo.
@@ -121,7 +140,7 @@ python -m DB.CreaDB
 IF ERRORLEVEL 1 goto error
 
 REM =====================================================
-REM Populate DB
+REM Populate database
 REM =====================================================
 
 echo.
@@ -131,16 +150,16 @@ if /I "%choice%"=="Y" (
     echo Populating database...
     python -m DB.ValInizialeDB
     IF ERRORLEVEL 1 goto error
-    echo Database successfully populated
+    echo Database successfully populated.
 ) else if /I "%choice%"=="N" (
-    echo Database left empty
+    echo Database left empty.
 ) else (
-    echo Invalid choice - database left empty
+    echo Invalid choice - database left empty.
 )
 
 echo.
 echo =====================================
-echo DATABASE SETUP COMPLETED
+echo SETUP COMPLETED SUCCESSFULLY
 echo =====================================
 echo.
 
@@ -149,39 +168,21 @@ exit /b 0
 
 
 REM =====================================================
-REM Function: find compatible Python
+REM Function: find compatible Python 3.10
 REM =====================================================
 
 :find_python
 set PYTHON_CMD=
 
-python -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
-IF NOT ERRORLEVEL 1 (
-    set PYTHON_CMD=python
-    exit /b 0
-)
-
-py -3.11 -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
-IF NOT ERRORLEVEL 1 (
-    set PYTHON_CMD=py -3.11
-    exit /b 0
-)
-
-py -3.10 -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
+py -3.10 -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3,10) else 1)" >nul 2>&1
 IF NOT ERRORLEVEL 1 (
     set PYTHON_CMD=py -3.10
     exit /b 0
 )
 
-py -3 -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
+python -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3,10) else 1)" >nul 2>&1
 IF NOT ERRORLEVEL 1 (
-    set PYTHON_CMD=py -3
-    exit /b 0
-)
-
-py -c "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
-IF NOT ERRORLEVEL 1 (
-    set PYTHON_CMD=py
+    set PYTHON_CMD=python
     exit /b 0
 )
 
@@ -190,6 +191,9 @@ exit /b 1
 
 :error
 echo.
-echo ERROR during database setup
+echo =====================================
+echo ERROR DURING SETUP
+echo =====================================
+echo.
 pause
 exit /b 1
